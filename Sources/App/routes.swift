@@ -1,20 +1,26 @@
 import Vapor
+import FluentSQLite
 
 /// Register your application's routes here.
 public func routes(_ router: Router) throws {
-    // Basic "It works" example
-    router.get { req in
-        return "It works!"
+    
+    // POST Example
+    router.post(Dish.self, at: "api/addDishes") { request, dish -> Future<Dish> in
+        return dish.save(on: request)
     }
     
-    // Basic "Hello, world!" example
-    router.get("hello") { req in
-        return "Hello, world!"
+    // GET Example
+    router.get("api/dishes") { request -> Future<[Dish]> in
+        return Dish.query(on: request).all()
     }
-
-    // Example of configuring a controller
-    let todoController = TodoController()
-    router.get("todos", use: todoController.index)
-    router.post("todos", use: todoController.create)
-    router.delete("todos", Todo.parameter, use: todoController.delete)
+    
+    //GET by id Example
+    router.get("api/dishes", Dish.parameter) {  request -> Future<Dish> in
+        return try request.parameters.next(Dish.self)
+    }
+    
+    // DELETE Example
+    router.delete("api/dishes", Dish.parameter) {  request -> Future<Dish> in
+        return try request.parameters.next(Dish.self).delete(on: request)
+    }
 }
